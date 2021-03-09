@@ -1,7 +1,7 @@
-# Blender v2.79 (sub 0) OBJ File: 'train.blend'
+# Blender v2.79 (sub 0) OBJ File: 'hw0_train.blend'
 # www.blender.org
-mtllib train.mtl
-o 圓柱體
+mtllib hw0_train.mtl
+o train_圓柱體
 v -0.246701 7.299206 7.579745
 v -0.246701 7.299206 -6.406910
 v -0.495512 7.227187 7.579745
