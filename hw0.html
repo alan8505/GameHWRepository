@@ -3,11 +3,13 @@
   </head>
   <body>
     <script src="https://threejs.org/build/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
 	<script type="text/javascript">
-		var clock = new THREE.Clock();
-		var scene, renderer, camera;
+				var clock = new THREE.Clock();
+		var scene, renderer, camera, controls;
 		var cube;
 		var angle = 0;
 		var turn = 1;
@@ -19,12 +21,13 @@
 		{
 			var width = window.innerWidth;
 			var height = window.innerHeight;
-
+		  
+		  // Renderer
 			renderer = new THREE.WebGLRenderer();
 		  renderer.setSize(window.innerWidth, window.innerHeight);
 			document.body.appendChild (renderer.domElement);
 
-			// STATS
+			// Stats
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
@@ -35,30 +38,40 @@
 			
 		  var cubeGeometry = new THREE.BoxGeometry (10,10,10);
 			var cubeMaterial = new THREE.MeshLambertMaterial ({color: 0x1ec876});
-		  var trainGeometry;
-		  var loader = new THREE.OBJLoader();
-		  loader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.obj", function (train) {
-			train.rotateY(Math.PI);
-			train.scale.set(2,2,2);
-			scene.add (train);
-			cube.material.visible = false;
-			cube = train;
-		  });
-			cube = new THREE.Mesh (cubeGeometry, cubeMaterial);
+		  cube = new THREE.Mesh (cubeGeometry, cubeMaterial);
 		  cube.position.set (60, 0, 00);
 			scene.add (cube);
+		  
 
+		  var mtlLoader = new THREE.MTLLoader();
+		  mtlLoader.setResourcePath("https://alan8505.github.io/GameHWRepository/objs/");
+		  mtlLoader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.mtl", function (mtl) {
+			var objLoader = new THREE.OBJLoader();
+			objLoader.setMaterials(mtl);
+			objLoader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.obj", function (train) {
+			  train.rotateY(Math.PI);
+			  train.scale.set(3,3,3);
+			  scene.add (train);
+			  cube.material.visible = false;
+			  cube = train;
+			});
+		  });
+		  
+		  
 			camera = new THREE.PerspectiveCamera (45, width/height, 0.1, 10000);
 			camera.position.y = 160;
 			camera.position.z = 100;
 			camera.lookAt (new THREE.Vector3(0,0,0));
+		  
+		  controls = new THREE.OrbitControls( camera, renderer.domElement );
+		  controls.update();
 
 			var skyboxGeometry = new THREE.BoxGeometry (1000,1000,1000);
 			var skyboxMaterial = new THREE.MeshBasicMaterial ({color: 0x1f1f1f, side:THREE.BackSide});
 			var skybox = new THREE.Mesh (skyboxGeometry, skyboxMaterial);
 			scene.add (skybox);
 
-			var gridXZ = new THREE.GridHelper(100, 10, 'red', 'white');
+			var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
 			scene.add(gridXZ);
 
 			var pointLight = new THREE.PointLight (0xffffff);
@@ -127,7 +140,8 @@
 			}
 		  }
 			
-			requestAnimationFrame ( animate );  
+			requestAnimationFrame ( animate );
+		  controls.update();
 			render();  
 		}
 
