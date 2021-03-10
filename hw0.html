@@ -1,155 +1,175 @@
 <html>
-  <head>
-  </head>
-  <body>
-    <script src="https://threejs.org/build/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
-    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
-	<script type="text/javascript">
-				var clock = new THREE.Clock();
-		var scene, renderer, camera, controls;
-		var cube;
-		var angle = 0;
-		var turn = 1;
+<head>
+<style>
+#button1{
+	position: absolute;
+	top: 20px;
+	width: auto;
+}
+</style>
+</head>
+<script src="https://threejs.org/build/three.min.js"></script>
+<script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+<script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<body>
+<div style="text-align:center;">
+	<button id="button1">Start/Stop</button>
+</div>
+<script type="text/javascript">
+var clock = new THREE.Clock();
+var scene, renderer, camera, controls;
+var cube;
+var angle = 0;
+var turn = 1;
 
-		init();
-		animate();
+init();
+animate();
 
-		function init()
-		{
-			var width = window.innerWidth;
-			var height = window.innerHeight;
-		  
-		  // Renderer
-			renderer = new THREE.WebGLRenderer();
-		  renderer.setSize(window.innerWidth, window.innerHeight);
-			document.body.appendChild (renderer.domElement);
+function init()
+{
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+  
+  // Renderer
+	renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+	document.body.appendChild (renderer.domElement);
 
-			// Stats
-			stats = new Stats();
-			stats.domElement.style.position = 'absolute';
-			stats.domElement.style.top = '0px';
-			stats.domElement.style.zIndex = 100;
-			document.body.appendChild( stats.domElement );	
+	// Stats
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.top = '0px';
+	stats.domElement.style.zIndex = 100;
+	document.body.appendChild( stats.domElement );	
 
-			scene = new THREE.Scene();
-			
-		  var cubeGeometry = new THREE.BoxGeometry (10,10,10);
-			var cubeMaterial = new THREE.MeshLambertMaterial ({color: 0x1ec876});
-		  cube = new THREE.Mesh (cubeGeometry, cubeMaterial);
-		  cube.position.set (60, 0, 00);
-			scene.add (cube);
-		  
+	scene = new THREE.Scene();
+	
+  var cubeGeometry = new THREE.BoxGeometry (10,10,10);
+	var cubeMaterial = new THREE.MeshLambertMaterial ({color: 0x1ec876});
+  cube = new THREE.Mesh (cubeGeometry, cubeMaterial);
+  cube.position.set (60, 0, 00);
+	scene.add (cube);
+  
 
-		  var mtlLoader = new THREE.MTLLoader();
-		  mtlLoader.setResourcePath("https://alan8505.github.io/GameHWRepository/objs/");
-		  mtlLoader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.mtl", function (mtl) {
-			var objLoader = new THREE.OBJLoader();
-			objLoader.setMaterials(mtl);
-			objLoader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.obj", function (train) {
-			  train.rotateY(Math.PI);
-			  train.scale.set(3,3,3);
-			  scene.add (train);
-			  cube.material.visible = false;
-			  cube = train;
-			});
-		  });
-		  
-		  
-			camera = new THREE.PerspectiveCamera (45, width/height, 0.1, 10000);
-			camera.position.y = 160;
-			camera.position.z = 100;
-			camera.lookAt (new THREE.Vector3(0,0,0));
-		  
-		  controls = new THREE.OrbitControls( camera, renderer.domElement );
-		  controls.update();
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setResourcePath("https://alan8505.github.io/GameHWRepository/objs/");
+  mtlLoader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.mtl", function (mtl) {
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(mtl);
+    objLoader.load("https://alan8505.github.io/GameHWRepository/objs/hw0_train.obj", function (train) {
+      train.rotateY(Math.PI);
+      train.scale.set(3,3,3);
+      scene.add (train);
+      cube.material.visible = false;
+      cube = train;
+    });
+  });
+  
+  
+	camera = new THREE.PerspectiveCamera (45, width/height, 0.1, 10000);
+	camera.position.y = 160;
+	camera.position.z = 100;
+	camera.lookAt (new THREE.Vector3(0,0,0));
+  
+  controls = new THREE.OrbitControls( camera, renderer.domElement );
+  controls.update();
 
-			var skyboxGeometry = new THREE.BoxGeometry (1000,1000,1000);
-			var skyboxMaterial = new THREE.MeshBasicMaterial ({color: 0x1f1f1f, side:THREE.BackSide});
-			var skybox = new THREE.Mesh (skyboxGeometry, skyboxMaterial);
-			scene.add (skybox);
+	var skyboxGeometry = new THREE.BoxGeometry (1000,1000,1000);
+	var skyboxMaterial = new THREE.MeshBasicMaterial ({color: 0x1f1f1f, side:THREE.BackSide});
+	var skybox = new THREE.Mesh (skyboxGeometry, skyboxMaterial);
+	scene.add (skybox);
 
-			var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
-			scene.add(gridXZ);
+	var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+	scene.add(gridXZ);
 
-			var pointLight = new THREE.PointLight (0xffffff);
-			pointLight.position.set (0,300,200);
-			scene.add (pointLight);
-			
-			window.addEventListener ('resize', onWindowResize, false);
-		}
+	var pointLight = new THREE.PointLight (0xffffff);
+	pointLight.position.set (0,300,200);
+	scene.add (pointLight);
+	
+	window.addEventListener ('resize', onWindowResize, false);
+  
+  document.getElementById("button1").onclick=function(){
+  	if (turn)
+    	turn = false;
+    else
+    	turn = true;
+  };
+}
 
-		function onWindowResize ()
-		{
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
-			renderer.setSize (window.innerWidth, window.innerHeight);
-		}
+function onWindowResize ()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize (window.innerWidth, window.innerHeight);
+}
 
-		var road = 0;
-		var x;
-		var z;
+var road = 0;
+var x, z;
+var turn = true;
 
-		function animate()
-		{
-			stats.update();
-			
-		  var radius = 40;
-		  var speed = 10;
-			var dt = clock.getDelta();
-			
-		  if(road==0 && 0-angle>=Math.PI/2){
-			if (x<=-40){
-				road = 1;
-			}
-			x -= speed*radius*0.10472*dt;
-			cube.position.set (x,0,z);
-		  }
-		  else if(road==0){
-			x = radius+radius*Math.cos(angle);
-				z = radius*Math.sin(angle);
-			cube.position.set (x,0,z);
-				cube.rotation.y = angle;
-			angle -= speed*0.10472*dt;
-		  }
-		  else if(road==1 && 0-angle<=Math.PI+Math.PI/2){
-			x = -radius+radius*Math.cos(angle);
-				z = radius*Math.sin(angle);
-			cube.position.set (x,0,z);
-				cube.rotation.y = angle;
-			angle -= speed*0.10472*dt;
-		  }
-		  else if(road==1){
-			if (x>=40){
-				road = 2;
-			}
-			x += speed*radius*0.10472*dt;
-			cube.position.set (x,0,z);
-		  }
-		  else{
-			x = radius+radius*Math.cos(angle);
-				z = radius*Math.sin(angle);
-			cube.position.set (x,0,z);
-				cube.rotation.y = angle;
-			angle -= speed*0.10472*dt;
-			if(0-angle>=2*Math.PI){
-				road=0;
-			  angle=0;
-			}
-		  }
-			
-			requestAnimationFrame ( animate );
-		  controls.update();
-			render();  
-		}
+function animate()
+{
+	stats.update();
+  
+  var radius = 40;
+  var speed = 16;
+	var dt = clock.getDelta();
+  
+  if (turn) {
+    if(road==0 && 0-angle>=Math.PI/2){
+      if (x<=-radius){
+        road = 1;
+      }
+      x -= speed*radius*0.10472*dt;
+      cube.position.set (x,0,z);
+    }
+    else if(road==0){
+      x = radius+radius*Math.cos(angle);
+      z = radius*Math.sin(angle);
+      cube.position.set (x,0,z);
+      cube.rotation.y = angle;
+      angle -= speed*0.10472*dt;
+    }
+    else if(road==1 && 0-angle<=Math.PI+Math.PI/2){
+      x = -radius+radius*Math.cos(angle);
+      z = radius*Math.sin(angle);
+      cube.position.set (x,0,z);
+      cube.rotation.y = angle;
+      angle -= speed*0.10472*dt;
+    }
+    else if(road==1){
+      if (x>=radius){
+        road = 2;
+      }
+      x += speed*radius*0.10472*dt;
+      cube.position.set (x,0,z);
+    }
+    else{
+      x = radius+radius*Math.cos(angle);
+      z = radius*Math.sin(angle);
+      cube.position.set (x,0,z);
+      cube.rotation.y = angle;
+      angle -= speed*0.10472*dt;
+      if(0-angle>=2*Math.PI){
+        road=0;
+        angle=0;
+      }
+    }
+  }
+	
+	requestAnimationFrame ( animate );
+  controls.update();
+	render();  
+}
 
 
-		function render()
-		{
-			renderer.render (scene, camera);
-		}
-	</script>
-  </body>
+function render()
+{
+	renderer.render (scene, camera);
+}
+</script>
+</body>
 </html>
