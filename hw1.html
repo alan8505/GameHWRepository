@@ -31,6 +31,7 @@ class Puck{
 		this.material = new THREE.MeshLambertMaterial();
     this.material.color = color;
     this.radius = radius;
+    this.mass = 1;
   	this.pos = pos
     this.vel = vel;
     this.mesh = new THREE.Mesh(this.geometry, this.material);
@@ -78,25 +79,75 @@ class Puck{
   
   ballCollision()
   {
-  	var force = Math.sqrt( Math.pow(50, 2) + Math.pow(50, 2) );
+  	//var force = Math.sqrt( Math.pow(50, 2) + Math.pow(50, 2) );
   	var itself = this;
     pucks.forEach(function(item){
     	if(itself==item) return;
-      var force2 = itself.vel.distanceTo( new THREE.Vector3(0, 0, 0) );
-    	var x = itself.pos.x-item.pos.x;
-      var z = itself.pos.z-item.pos.z;
-    	var d = itself.pos.distanceTo(item.pos);
+      //let force2 = itself.vel.distanceTo( new THREE.Vector3(0, 0, 0) );
+      //let force3 = item.vel.distanceTo( new THREE.Vector3(0, 0, 0) );
+    	let x = itself.pos.x-item.pos.x;
+      let z = itself.pos.z-item.pos.z;
+    	let d = itself.pos.distanceTo(item.pos);
   		if(d < itself.radius+item.radius){
       	itself.pos.x += (itself.radius+item.radius-d)/d*x;
         itself.pos.z += (itself.radius+item.radius-d)/d*z;
         
+        let velocity1 = new THREE.Vector2(itself.vel.x, itself.vel.z);
+    		let velocity2 = new THREE.Vector2(item.vel.x, item.vel.z);
+        //console.log("velocity1.y = "+velocity1.y);
+        
+        let vNorm = new THREE.Vector2(itself.pos.x - item.pos.x, itself.pos.z - item.pos.z);
+        //console.log("vNorm = "+vNorm.x);
+      
+        let unitVNorm = vNorm.clone().normalize();
+        let unitVTan = new THREE.Vector2(-unitVNorm.y, unitVNorm.x);
+        //console.log("unitVNorm.x = "+unitVNorm.x);
+
+        let v1n = velocity1.clone().dot(unitVNorm);
+        let v1t = velocity1.clone().dot(unitVTan);
+        //console.log("v1n = "+v1n);
+
+        let v2n = velocity2.clone().dot(unitVNorm);
+        let v2t = velocity2.clone().dot(unitVTan);
+
+        let v1nAfter = (v1n * (itself.mass - item.mass) + 2 * item.mass * v2n) / (itself.mass + item.mass);
+        let v2nAfter = (v2n * (item.mass - itself.mass) + 2 * itself.mass * v1n) / (itself.mass + item.mass);
+        //console.log("v1nAfter = "+v1nAfter);
+        
+        if (v1nAfter < v2nAfter)
+          return;
+          
+        let v1VectorNorm = unitVNorm.clone().multiplyScalar(v1nAfter);
+        let v1VectorTan = unitVTan.clone().multiplyScalar(v1t);
+        //console.log("v1VectorNorm.x = "+v1VectorNorm.x);
+        //console.log("v1VectorTan.x = "+v1VectorTan.x);
+
+        let v2VectorNorm = unitVNorm.clone().multiplyScalar(v2nAfter);
+        let v2VectorTan = unitVTan.clone().multiplyScalar(v2t);
+        
+        let velocity1After = v1VectorNorm.clone().add(v1VectorTan);
+        let velocity2After = v2VectorNorm.clone().add(v2VectorTan);
+        let tmp = v1VectorNorm.x + v1VectorTan.x
+        //console.log("velocity1After.x = "+velocity1After.x);
+        //console.log("velocity1After.y = "+velocity1After.y);
+        //console.log("=============================================");
+        
+        itself.vel.x = velocity1After.x;
+        itself.vel.z = velocity1After.y;
+
+        item.vel.x = velocity2After.x;
+        item.vel.z = velocity2After.y;
+        
+        /*
         x = itself.pos.x-item.pos.x;
       	z = itself.pos.z-item.pos.z;
         d = itself.pos.distanceTo(item.pos);
         force2 = Math.abs( force2/d*x );
+        force3 = Math.abs( force3/d*x );
         
       	itself.vel.add( new THREE.Vector3(force2/d*x, 0, force2/d*z) );
         item.vel.sub( new THREE.Vector3(force2/d*x, 0, force2/d*z) );
+        */
         
         let color = itself.material.color;
         itself.material.color = item.material.color;
