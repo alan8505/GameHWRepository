@@ -13,6 +13,13 @@
 <audio id="collisionsound" style="display:none">
 <source src="https://jyunming-chen.github.io/game3js/gameHWhelpers/sounds/collision3.wav" type="audio/wav">
 </audio>
+<style>
+#renderer{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+</style>
 <script type="text/javascript">
 var clock = new THREE.Clock();
 var scene, renderer, camera, controls;
@@ -173,6 +180,7 @@ function init()
   // Renderer
 	renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.domElement.id = "renderer";
 	document.body.appendChild (renderer.domElement);
 
 	// Stats
