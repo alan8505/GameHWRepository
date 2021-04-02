@@ -1,0 +1,310 @@
+<html>
+
+<head>
+<script src="https://threejs.org/build/three.min.js"></script>
+<script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+<script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<style>
+#renderer{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: -10;
+}
+</style>
+</head>
+    
+<body>
+<br>
+<div style="text-align:center">
+<button id="toggleButton">Toggle</button>
+</div>
+<audio id="bgm" style="display:none">
+<source src="https://alan8505.github.io/GameHWRepository/natsuyasuminotanken.mp3" type="audio/mp3">
+</audio>
+<script>
+var renderer, scene, camera, controls, clock;
+
+var target;
+var run = false;
+var showAxes = false;
+
+var bgm;
+
+
+class Character
+{
+	constructor()
+  {
+  	this.main = new THREE.Object3D();
+    this.main.add( new THREE.AxesHelper(10) );
+    
+    this.body = this.createPart(10, 15, 5, 0, 0, 0);
+    this.body.position.set(0, 22.5, 0);
+    this.main.add(this.body);
+    
+    this.head = this.createPart(10, 10, 10, 0, 5, 0);
+    this.head.position.set(0, 7.5, 0);
+    this.body.add(this.head);
+    
+    this.leftArm = this.createPart(5, 15, 5, 0, -5, 0);
+    this.leftArm.position.set(7.5, 5, 0);
+    this.body.add(this.leftArm);
+    
+    this.rightArm = this.createPart(5, 15, 5, 0, -5, 0);
+    this.rightArm.position.set(-7.5, 5, 0);
+    this.body.add(this.rightArm);
+    
+    this.leftLeg = this.createPart(5, 15, 5, 0, -7.5, 0);
+    this.leftLeg.position.set(2.5, -7.5, 0);
+    this.body.add(this.leftLeg);
+    
+    this.rightLeg = this.createPart(5, 15, 5, 0, -7.5, 0);
+    this.rightLeg.position.set(-2.5, -7.5, 0);
+    this.body.add(this.rightLeg);
+  }
+  
+  createPart(x, y, z, px, py, pz)
+  {
+    var part = new THREE.Object3D();
+    var geometry = new THREE.BoxGeometry (x, y, z);
+    var material = new THREE.MeshNormalMaterial ({transparent:true, opacity:0.65});
+    var mesh =  new THREE.Mesh (geometry, material);
+    mesh.position.set(px, py, pz);
+    part.add(mesh);
+
+    var axesHelper = new THREE.AxesHelper(5);
+    part.add(axesHelper);
+
+    return part;
+  }
+  
+  setAxesVisible(status)
+  {
+    this.main.children[0].visible = status;
+    this.body.children[1].visible = status;
+    this.head.children[1].visible = status;
+    this.leftArm.children[1].visible = status;
+    this.rightArm.children[1].visible = status;
+    this.leftLeg.children[1].visible = status;
+    this.rightLeg.children[1].visible = status;
+  }
+  
+}
+
+init();
+animate();
+
+function init()
+{
+  // Renderer & Scene
+	renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x1f1f1f);
+  renderer.domElement.id = "renderer";
+	document.body.appendChild (renderer.domElement);
+  scene = new THREE.Scene();
+  clock = new THREE.Clock();
+
+	// Stats
+	stats = new Stats();
+	document.body.appendChild( stats.domElement );
+  
+  // Camera
+	camera = new THREE.PerspectiveCamera (45, window.innerWidth/window.innerHeight, 0.1, 10000);
+	camera.position.y = 60;
+	camera.position.z = 100;
+	camera.lookAt ( new THREE.Vector3(0, 0, 0) );
+  
+  // OrbitControls
+  controls = new THREE.OrbitControls( camera, renderer.domElement );
+  controls.target =  new THREE.Vector3(0, 25, 0);
+  controls.update();
+  
+  // GridHelper
+  var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+	scene.add(gridXZ);
+  
+  // Listener
+  window.addEventListener ('resize', onWindowResize, false);
+  document.getElementById("toggleButton").onclick = function()
+  {
+  	run = !run;
+    if (run)	bgm.play();
+    else			bgm.pause();
+  };
+  
+  
+  // Light
+  var pointLight = new THREE.PointLight (0xffffff);
+	pointLight.position.set (0,300,200);
+	scene.add (pointLight);
+
+  // Create charactor
+  target = new Character();
+  target.setAxesVisible(showAxes);
+  scene.add (target.main);
+  
+  
+  // BGM
+  bgm = document.getElementById ('bgm');
+  bgm.play();
+  
+	// Load texture
+  var loader = new THREE.TextureLoader();
+  loader.load
+  (
+  	'https://i.imgur.com/xWeq4nS.png',
+    function ( texture )
+    {
+    	texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.LinearMipMapLinearFilter;
+      texture.center.set(0, 1);
+      var textureWidth = 64;
+      var textureHeight = 64;
+      let xy;
+      
+			xy = [
+      	[16, -8, 8, 8],
+        [0, -8, 8, 8],
+				[8, 0, 8, 8],
+        [16, 0, 8, 8],
+        [8, -8, 8, 8],
+        [24, -8, 8, 8]
+      ];
+      target.head.children[0].material = createMaterial(xy);
+      
+      xy = [
+      	[28, -20, 4, 12],
+        [16, -20, 4, 12],
+				[20, -16, 8, 4],
+        [28, -16, 8, 4],
+        [20, -20, 8, 12],
+        [32, -20, 8, 12]
+      ];
+      target.body.children[0].material = createMaterial(xy);
+      
+      xy = [
+      	[48, -20, 4, 12],
+        [40, -20, 4, 12],
+				[44, -16, 4, 4],
+        [48, -16, 4, 4],
+        [44, -20, 4, 12],
+        [52, -20, 4, 12]
+      ];
+      target.leftArm.children[0].material = createMaterial(xy);
+      
+      xy = [
+      	[40, -52, 4, 12],
+        [32, -52, 4, 12],
+				[36, -48, 4, 4],
+        [40, -48, 4, 4],
+        [36, -52, 4, 12],
+        [44, -52, 4, 12]
+      ];
+      target.rightArm.children[0].material = createMaterial(xy);
+      
+      xy = [
+      	[8, -20, 4, 12],
+        [0, -20, 4, 12],
+				[4, -16, 4, 4],
+        [8, -16, 4, 4],
+        [4, -20, 4, 12],
+        [12, -20, 4, 12]
+      ];
+      target.leftLeg.children[0].material = createMaterial(xy);
+      
+      xy = [
+      	[24, -52, 4, 12],
+        [16, -52, 4, 12],
+				[20, -48, 4, 4],
+        [24, -48, 4, 4],
+        [20, -52, 4, 12],
+        [28, -52, 4, 12]
+      ];
+      target.rightLeg.children[0].material = createMaterial(xy);
+      
+      run = true;
+      
+      function createMaterial(xy)
+      {
+      	var material = [];
+        
+        xy.forEach( element=>
+        {
+        	texture.repeat.set(element[2]/textureWidth, element[3]/textureHeight);
+          var tex = createTexture(element[0]/textureWidth, element[1]/textureHeight);
+        	material.push( tex );
+        });
+
+        material.forEach( element=> element.map.needsUpdate = true );
+        return material;
+      }
+      
+      function createTexture(x, y)
+      {
+      	var tex = texture.clone();
+        tex.offset.set(x, y);
+        return new THREE.MeshBasicMaterial( {map: tex} );
+      }
+      
+    }
+  );
+  
+
+}
+
+function onWindowResize ()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize (window.innerWidth, window.innerHeight);
+}
+
+var x, z;
+var radius = 60;
+var speed = 6.3;
+var angle = 0;
+
+function animate()
+{
+	requestAnimationFrame ( animate );
+  controls.update();
+	stats.update();
+  
+	var dt = clock.getDelta();
+  
+  if (run)
+  {
+  	// Move
+    x = radius*Math.cos(angle);
+    z = radius*Math.sin(angle);
+    target.main.position.set (x,0,z);
+    target.main.rotation.y = Math.PI-angle;
+    angle -= speed*0.10472*dt;
+    
+    // Camera
+    var center = target.main.position.clone();
+    center.y = 20;
+    controls.target = center;
+    camera.position.x -= x - radius*Math.cos(angle);
+    camera.position.z -= z - radius*Math.sin(angle);
+    
+    // Walking
+    var walkingAngle = Math.cos(angle*speed*1.5)/3*2;
+    target.leftLeg.rotation.x  =  walkingAngle;
+    target.rightLeg.rotation.x = -walkingAngle;
+    target.leftArm.rotation.x  = -walkingAngle;
+    target.rightArm.rotation.x =  walkingAngle;
+  }
+  
+	renderer.render (scene, camera);
+}
+
+</script>
+</body>
+
+</html>
