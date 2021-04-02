@@ -28,7 +28,7 @@
 <div style="text-align:center">
 <button id="toggleButton">Toggle</button>
 </div>
-<audio id="bgm" style="display:none">
+<audio id="bgm" style="display:none" controls autoplay muted>
 <source src="https://alan8505.github.io/GameHWRepository/natsuyasuminotanken.mp3" type="audio/mp3">
 </audio>
 <script>
@@ -157,7 +157,7 @@ function init()
   
   // BGM
   bgm = document.getElementById ('bgm');
-  bgm.play();
+  bgm.muted = false;
   
 	// Load texture
   var loader = new THREE.TextureLoader();
