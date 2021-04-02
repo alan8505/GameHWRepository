@@ -2,9 +2,16 @@
 <head>
 <style>
 #button1{
-	position: absolute;
+	position: relative;
 	top: 20px;
 	width: auto;
+	z-index: 10;
+}
+
+#renderer{
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 </style>
 </head>
@@ -36,6 +43,7 @@ function init()
   // Renderer
 	renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.domElement.id = "renderer";
 	document.body.appendChild (renderer.domElement);
 
 	// Stats
