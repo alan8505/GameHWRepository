@@ -8,9 +8,10 @@
 <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <style>
-#toggleButton{
+.button{
   position: relative;
   z-index: 10;
+  width: 60px;
 }
 
 #renderer{
@@ -28,17 +29,14 @@
 <div style="text-align:center">
 <button id="toggleButton">Toggle</button>
 </div>
-<audio id="bgm" style="display:none" controls autoplay muted loop>
-<source src="https://alan8505.github.io/GameHWRepository/natsuyasuminotanken.mp3" type="audio/mp3">
-</audio>
 <script>
-var renderer, scene, camera, controls, clock;
+var renderer, scene, controls, clock;
+
+var mainCamera, camera, camera2;
 
 var target;
 var run = false;
 var showAxes = false;
-
-var bgm;
 
 
 class Character
@@ -121,9 +119,14 @@ function init()
   
   // Camera
 	camera = new THREE.PerspectiveCamera (45, window.innerWidth/window.innerHeight, 0.1, 10000);
-	camera.position.y = 60;
-	camera.position.z = 100;
+	camera.position.y = 100;
+	camera.position.z = 150;
 	camera.lookAt ( new THREE.Vector3(0, 0, 0) );
+  
+  camera2 = camera.clone();
+  camera2.position.y = 60;
+	camera2.position.z = 100;
+  mainCamera = camera;
   
   // OrbitControls
   controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -139,8 +142,13 @@ function init()
   document.getElementById("toggleButton").onclick = function()
   {
   	run = !run;
-    if (run)	bgm.play();
-    else			bgm.pause();
+  };
+  document.getElementById("viewButton").onclick = function()
+  {
+  	if (mainCamera == camera)
+    	mainCamera = camera2;
+    else
+    	mainCamera = camera;
   };
   
   
@@ -154,10 +162,6 @@ function init()
   target.setAxesVisible(showAxes);
   scene.add (target.main);
   
-  
-  // BGM
-  bgm = document.getElementById ('bgm');
-  bgm.muted = false;
   
 	// Load texture
   var loader = new THREE.TextureLoader();
@@ -265,15 +269,21 @@ function init()
 
 function onWindowResize ()
 {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
+	mainCamera.aspect = window.innerWidth / window.innerHeight;
+	mainCamera.updateProjectionMatrix();
 	renderer.setSize (window.innerWidth, window.innerHeight);
 }
 
-var x, z;
-var radius = 60;
-var speed = 6.3;
-var angle = 0;
+var x, z, px, pz;
+var radius = 25;
+var radius2 = 50;
+var speed = 15;
+var speed2 = 7.5;
+var angle = Math.PI;
+
+var angleWalk = 0;
+
+var step = 0;
 
 function animate()
 {
@@ -286,28 +296,58 @@ function animate()
   if (run)
   {
   	// Move
-    x = radius*Math.cos(angle);
-    z = radius*Math.sin(angle);
-    target.main.position.set (x,0,z);
-    target.main.rotation.y = Math.PI-angle;
-    angle -= speed*0.10472*dt;
+    if (step==0)
+    {
+      x = radius + radius*Math.cos(angle);
+      z = radius*Math.sin(angle);
+      target.main.position.set (x,0,z);
+      target.main.rotation.y = Math.PI-angle;
+      angle -= speed*0.10472*dt;
+      if (angle <= -Math.PI){
+      	step = 1;
+        angle = Math.PI;
+      }
+    }
+    else if (step==1)
+    {
+    	x = -radius2 - radius2*Math.cos(angle);
+      z = -radius2*Math.sin(angle);
+      target.main.position.set (x,0,z);
+      target.main.rotation.y = Math.PI-angle;
+      angle += speed2*0.10472*dt;
+      if (angle >= Math.PI*3){
+      	step = 0;
+        angle = Math.PI;
+      }
+    }
+    
+    angleWalk -= 40*0.10472*dt;
     
     // Camera
     var center = target.main.position.clone();
-    center.y = 20;
-    controls.target = center;
-    camera.position.x -= x - radius*Math.cos(angle);
-    camera.position.z -= z - radius*Math.sin(angle);
+    center.y = 25;
+    
+    if (step==0)
+    {
+      camera2.position.x -= x - ( radius + radius*Math.cos(angle) );
+      camera2.position.z -= z - radius*Math.sin(angle);
+    }
+    if (step==1)
+    {
+    	camera2.position.x -= x - ( -radius2 - radius2*Math.cos(angle) );
+      camera2.position.z -= z - ( -radius2*Math.sin(angle) );
+    }
+    camera2.lookAt(center);
     
     // Walking
-    var walkingAngle = Math.cos(angle*speed*1.5)/3*2;
+    var walkingAngle = Math.cos(angleWalk)/3*2;;
     target.leftLeg.rotation.x  =  walkingAngle;
     target.rightLeg.rotation.x = -walkingAngle;
     target.leftArm.rotation.x  = -walkingAngle;
     target.rightArm.rotation.x =  walkingAngle;
   }
   
-	renderer.render (scene, camera);
+	renderer.render (scene, mainCamera);
 }
 
 </script>
