@@ -142,12 +142,10 @@ function init()
   
   // Listener
   window.addEventListener ('resize', onWindowResize, false);
-  document.getElementById("toggleButton").onclick = function()
-  {
+  document.getElementById("toggleButton").onclick = function(){
   	run = !run;
   };
-  document.getElementById("viewButton").onclick = function()
-  {
+  document.getElementById("viewButton").onclick = function(){
   	if (mainCamera == camera)
     	mainCamera = camera2;
     else
